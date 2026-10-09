@@ -5,70 +5,253 @@ import math
 class PosStochasticComputing:
     APPLY_FLIPS = False
     APPLY_SHIFTS = False
+    FLIP_PROB = 0.0001
+    SHIFT_PROB = 0.0001
 
     @classmethod
     def apply_bitshift(cls, bitstream):
         if not PosStochasticComputing.APPLY_SHIFTS:
             return bitstream
 
-        raise Exception("apply the bitshift error to the bitstream with probability 0.0001")
+        input_len = len(bitstream)
+        output_bitstream = []
+        for i in range(len(bitstream)):
+            if len(output_bitstream) == input_len: 
+                break
+            else:
+                if np.random.uniform() < PosStochasticComputing.SHIFT_PROB:
+                    output_bitstream.append(bitstream[i])
+                    output_bitstream.append(bitstream[i])
+                else:
+                    output_bitstream.append(bitstream[i])
+
+        # Truncate the output bitstream to the original length if it exceeds it
+        if len(output_bitstream) > input_len:
+            output_bitstream = output_bitstream[:input_len]
+        return output_bitstream
+
+        # raise Exception("apply the bitshift error to the bitstream with probability 0.0001")
 
     @classmethod
     def apply_bitflip(self, bitstream):
         if not PosStochasticComputing.APPLY_FLIPS:
             return bitstream
 
-        raise Exception("apply the to the bitstream with probability 0.0001")
+        for i in range(len(bitstream)):
+            if np.random.uniform() < PosStochasticComputing.FLIP_PROB:
+                bitstream[i] = 0 if bitstream[i] == 1 else 1
+
+        return bitstream
+
+        # raise Exception("apply the to the bitstream with probability 0.0001")
 
 
 
     @classmethod
     def to_stoch(cls, prob, nbits):
         assert(prob <= 1.0 and prob >= 0.0)
-        raise Exception("convert a decimal value in [0,1] to an <nbit> length bitstream.")
+
+        bitstream = []
+        for _ in range(nbits):
+            if np.random.uniform() < prob:
+                bitstream.append(1)
+            else:
+                bitstream.append(0)
+
+        return bitstream
+        
+
+        # raise Exception("convert a decimal value in [0,1] to an <nbit> length bitstream.")
+
+    @classmethod    
+    def stoch_diff(cls, bitstream, bitstream2):
+        assert(len(bitstream) == len(bitstream2))
+
+        output_bitstream = []
+        for b1, b2 in zip(bitstream, bitstream2):
+            output_bitstream.append(b1 ^ b2)
+
+        return output_bitstream
 
     @classmethod
     def stoch_add(cls, bitstream, bitstream2):
         assert(len(bitstream) == len(bitstream2))
-        raise Exception("add two stochastic bitstreams together")
+
+        output_bitstream = []
+        for b1, b2 in zip(bitstream, bitstream2):
+            if np.random.uniform() < 0.5:
+                output_bitstream.append(b1)
+            else:
+                output_bitstream.append(b2)
+
+        return output_bitstream
+
+        # raise Exception("add two stochastic bitstreams together")
 
     @classmethod
     def stoch_mul(cls, bitstream, bitstream2):
         assert(len(bitstream) == len(bitstream2))
-        raise Exception("multiply two stochastic bitstreams together")
+
+        output_bitstream = []
+        for b1, b2 in zip(bitstream, bitstream2):
+            output_bitstream.append(b1 & b2)
+
+        return output_bitstream
+        # raise Exception("multiply two stochastic bitstreams together")
 
     @classmethod
     def from_stoch(cls, result):
-        raise Exception("convert a stochastic bitstream to a numerical value")
+        # Truncate the result to the original length if it exceeds it
+        if len(result) > 0:
+            return np.mean(result)
+        else:
+            return 0.0
+
+        # raise Exception("convert a stochastic bitstream to a numerical value")
+
+        
+    
 
 class StochasticComputingStaticAnalysis:
 
     def __init__(self):
-        pass
+        self.result_prec = 1
+
 
     def req_length(self, smallest_value):
-        raise Exception("figure out the smallest bitstream length necessary represent the input decimal value. This is also called the precision.")
+
+        return math.ceil(1/smallest_value)
+        # raise Exception("figure out the smallest bitstream length necessary represent the input decimal value. This is also called the precision.")
 
     def stoch_var(self, prec):
-        raise Exception("update static analysis -- the expression contains a variable with precision <prec>.")
-        result_prec = None
-        return result_prec
+        # raise Exception("update static analysis -- the expression contains a variable with precision <prec>.")
+        self.result_prec = min(self.result_prec, prec)
+        return prec
 
 
     def stoch_add(self, prec1, prec2):
-        raise Exception("update static analysis -- the expression adds together two bitstreams with precisions <prec1> and <prec2> respectively.")
-        result_prec = None
-        return result_prec
+        # raise Exception("update static analysis -- the expression adds together two bitstreams with precisions <prec1> and <prec2> respectively.")
+        self.result_prec = min(prec1, prec2, self.result_prec)
+        return min(prec1, prec2)
 
 
     def stoch_mul(self, prec1, prec2):
-        raise Exception("update static analysis -- the expression multiplies together two bitstreams with precisions <prec1> and <prec2> respectively.")
-        result_prec = None
-        return res_prec
+        # raise Exception("update static analysis -- the expression multiplies together two bitstreams with precisions <prec1> and <prec2> respectively.")
+        self.result_prec = min(prec1*prec2, self.result_prec)
+        return prec1*prec2
 
     def get_size(self):
-        raise Exception("get minimum bitstream length required by computation.")
+        return self.req_length(self.result_prec)
+        # raise Exception("get minimum bitstream length required by computation.")
 
+class BipolarPosStochasticComputing:
+    APPLY_FLIPS = False
+    APPLY_SHIFTS = False
+    FLIP_PROB = 0.0001
+    SHIFT_PROB = 0.0001
+
+    @classmethod
+    def apply_bitshift(cls, bitstream):
+        if not PosStochasticComputing.APPLY_SHIFTS:
+            return bitstream
+
+        input_len = len(bitstream)
+        output_bitstream = []
+        for i in range(len(bitstream)):
+            if len(output_bitstream) == input_len: 
+                break
+            else:
+                if np.random.uniform() < PosStochasticComputing.SHIFT_PROB:
+                    output_bitstream.append(bitstream[i])
+                    output_bitstream.append(bitstream[i])
+                else:
+                    output_bitstream.append(bitstream[i])
+
+        # Truncate the output bitstream to the original length if it exceeds it
+        if len(output_bitstream) > input_len:
+            output_bitstream = output_bitstream[:input_len]
+        return output_bitstream
+
+        # raise Exception("apply the bitshift error to the bitstream with probability 0.0001")
+
+    @classmethod
+    def apply_bitflip(self, bitstream):
+        if not PosStochasticComputing.APPLY_FLIPS:
+            return bitstream
+
+        for i in range(len(bitstream)):
+            if np.random.uniform() < PosStochasticComputing.FLIP_PROB:
+                bitstream[i] = 0 if bitstream[i] == 1 else 1
+
+        return bitstream
+
+        # raise Exception("apply the to the bitstream with probability 0.0001")
+
+
+
+    @classmethod
+    def to_stoch(cls, value, nbits):
+        assert(value <= 1.0 and value >= -1.0)
+
+        prob = (value + 1) / 2
+
+        bitstream = []
+        for _ in range(nbits):
+            if np.random.uniform() < prob:
+                bitstream.append(1)
+            else:
+                bitstream.append(0)
+
+        return bitstream
+        
+
+        # raise Exception("convert a decimal value in [0,1] to an <nbit> length bitstream.")
+
+    @classmethod
+    def stoch_diff(cls, bitstream, bitstream2):
+        assert(len(bitstream) == len(bitstream2))
+
+        output_bitstream = []
+        for b1, b2 in zip(bitstream, bitstream2):
+            output_bitstream.append(b1 ^ b2)
+
+        return output_bitstream
+
+    @classmethod
+    def stoch_add(cls, bitstream, bitstream2):
+        assert(len(bitstream) == len(bitstream2))
+
+        output_bitstream = []
+        for b1, b2 in zip(bitstream, bitstream2):
+            if np.random.uniform() < 0.5:
+                output_bitstream.append(b1)
+            else:
+                output_bitstream.append(b2)
+
+        return output_bitstream
+
+        # raise Exception("add two stochastic bitstreams together")
+
+    @classmethod
+    def stoch_mul(cls, bitstream, bitstream2):
+        assert(len(bitstream) == len(bitstream2))
+
+        output_bitstream = []
+        for b1, b2 in zip(bitstream, bitstream2):
+            output_bitstream.append(int(b1 == b2))
+
+        return output_bitstream
+        # raise Exception("multiply two stochastic bitstreams together")
+
+    @classmethod
+    def from_stoch(cls, result):
+        # Truncate the result to the original length if it exceeds it
+        if len(result) > 0:
+            return 2 * np.mean(result) - 1
+        else:
+            return 0.0
+
+        # raise Exception("convert a stochastic bitstream to a numerical value")
 
 
 # run a stochastic computation for ntrials trials
@@ -81,9 +264,12 @@ def run_stochastic_computation(lambd, ntrials, visualize=True, summary=True):
 
     if visualize:
         nbins = math.floor(np.sqrt(ntrials))
+        plt.figure()
         plt.hist(results,bins=nbins)
         plt.axvline(x=reference_value, color="red")
-        plt.show()
+        # plt.show()
+        plt.savefig(f"images/experiment_Z1-{np.random.randint(100)}.png")
+        plt.close()
     if summary:
         print("ref=%f" % (reference_value))
         print("mean=%f" % np.mean(results))
@@ -165,36 +351,37 @@ def PART_Z_execute_rng_efficient_computation(value,N,save_rngs=True):
 
 
 
-print("---- part a: effect of length on stochastic computation ---")
-ntrials = 10000
-run_stochastic_computation(lambda : PART_A_example_computation(bitstream_len=10), ntrials)
-run_stochastic_computation(lambda : PART_A_example_computation(bitstream_len=100), ntrials)
-run_stochastic_computation(lambda : PART_A_example_computation(bitstream_len=1000), ntrials)
+
+# print("---- part a: effect of length on stochastic computation ---")
+# ntrials = 10000
+# run_stochastic_computation(lambda : PART_A_example_computation(bitstream_len=10), ntrials)
+# run_stochastic_computation(lambda : PART_A_example_computation(bitstream_len=100), ntrials)
+# run_stochastic_computation(lambda : PART_A_example_computation(bitstream_len=1000), ntrials)
 
 
-# Part X, introduce non-idealities
-PosStochasticComputing.APPLY_FLIPS = True
-PosStochasticComputing.APPLY_SHIFTS =False
-print("---- part x: effect of bit flips ---")
-run_stochastic_computation(lambda : PART_A_example_computation(bitstream_len=1000), ntrials)
-PosStochasticComputing.APPLY_FLIPS = False
-PosStochasticComputing.APPLY_SHIFTS = True
-print("---- part x: effect of bit shifts ---")
-run_stochastic_computation(lambda : PART_A_example_computation(bitstream_len=1000), ntrials)
-PosStochasticComputing.APPLY_FLIPS = False
-PosStochasticComputing.APPLY_SHIFTS =False
+# # Part X, introduce non-idealities
+# PosStochasticComputing.APPLY_FLIPS = True
+# PosStochasticComputing.APPLY_SHIFTS =False
+# print("---- part x: effect of bit flips ---")
+# run_stochastic_computation(lambda : PART_A_example_computation(bitstream_len=1000), ntrials)
+# PosStochasticComputing.APPLY_FLIPS = False
+# PosStochasticComputing.APPLY_SHIFTS = True
+# print("---- part x: effect of bit shifts ---")
+# run_stochastic_computation(lambda : PART_A_example_computation(bitstream_len=1000), ntrials)
+# PosStochasticComputing.APPLY_FLIPS = False
+# PosStochasticComputing.APPLY_SHIFTS =False
 
 
-# Part Y, apply static analysis
-print("---- part y: apply static analysis ---")
-PART_Y_test_analysis()
+# # Part Y, apply static analysis
+# print("---- part y: apply static analysis ---")
+# PART_Y_test_analysis()
 
-# Part Z, resource efficent rng generation
-print("---- part z: one-rng optimization ---")
-for _ in range(5):
-    v = round(np.random.uniform(),1)
-    print(f"x = {v}")
-    print("running with save_rngs disabled")
-    run_stochastic_computation(lambda : PART_Z_execute_rng_efficient_computation(value=v, N=1000, save_rngs=False), ntrials)
-    print("running with save_rngs enabled")
-    run_stochastic_computation(lambda : PART_Z_execute_rng_efficient_computation(value=v, N=1000, save_rngs=True), ntrials)
+# # Part Z, resource efficent rng generation
+# print("---- part z: one-rng optimization ---")
+# for _ in range(5):
+#     v = round(np.random.uniform(),1)
+#     print(f"x = {v}")
+#     print("running with save_rngs disabled")
+#     run_stochastic_computation(lambda : PART_Z_execute_rng_efficient_computation(value=v, N=1000, save_rngs=False), ntrials)
+#     print("running with save_rngs enabled")
+#     run_stochastic_computation(lambda : PART_Z_execute_rng_efficient_computation(value=v, N=1000, save_rngs=True), ntrials)
